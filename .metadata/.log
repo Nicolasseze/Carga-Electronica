@@ -1,0 +1,18 @@
+!SESSION 2023-09-10 20:12:43.168 -----------------------------------------------
+eclipse.buildId=Version 1.10.0
+java.version=11.0.14.1
+java.vendor=Eclipse Adoptium
+BootLoader constants: OS=win32, ARCH=x86_64, WS=win32, NL=es_AR
+Command-line arguments:  -os win32 -ws win32 -arch x86_64
+
+!ENTRY com.st.stm32cube.ide.mcu.informationcenter 4 4 2023-09-10 20:13:27.731
+!MESSAGE CubeMX plugin appears to be active, Log4j initialization might be too late.
+
+!ENTRY com.st.stm32cube.ide.mcu.informationcenter 1 1 2023-09-10 20:13:27.772
+!MESSAGE Log4j initialized with config file C:\Users\nicol\OneDrive\Documents\UNIVERSIDAD TECNOLOGICA NACIONAL\PROYECTO FINAL\.metadata\.log4j.xml
+
+!ENTRY com.st.stm32cube.ide.mcu.ide 1 1 2023-09-10 20:13:30.324
+!MESSAGE Started RMI Server, listening on port 41337
+
+!ENTRY org.eclipse.cdt.core 1 0 2023-09-10 20:15:28.620
+!MESSAGE Indexed 'Carga_Electronica' (19 sources, 81 headers) in 1.67 sec: 4,259 declarations; 17,942 references; 0 unresolved inclusions; 1 syntax errors; 2 unresolved names (0.009%)
