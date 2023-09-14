@@ -1,4 +1,4 @@
-<mxfile host="app.diagrams.net" modified="2023-09-14T02:58:36.720Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 Edg/116.0.1938.76" etag="seBSoD1mAmvfAKWwYeDH" version="21.7.5" type="github">
+<mxfile host="app.diagrams.net" modified="2023-09-14T03:38:23.420Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 Edg/116.0.1938.76" etag="o5x33zKkiwqU2FEuMoph" version="21.7.5" type="github">
   <diagram name="Página-1" id="8Mt59xhW5Ja87KvlYgC2">
     <mxGraphModel dx="1240" dy="653" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="10000" pageHeight="10000" math="0" shadow="0">
       <root>
@@ -80,7 +80,7 @@
           <mxGeometry x="40" y="180" width="120" height="60" as="geometry" />
         </mxCell>
         <mxCell id="EgE4pv62jT90ue2VEDZU-56" value="Enviar Datos UI/UX" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-          <mxGeometry x="360" y="180" width="120" height="60" as="geometry" />
+          <mxGeometry x="360" y="100" width="120" height="60" as="geometry" />
         </mxCell>
         <mxCell id="RPfYvq4qA6KvcjTwU50I-38" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="TbY6Uy7gYrQI7i52C0bx-3" target="RPfYvq4qA6KvcjTwU50I-35" edge="1">
           <mxGeometry relative="1" as="geometry" />
@@ -189,7 +189,7 @@
           <mxGeometry x="110" y="1140" width="120" height="60" as="geometry" />
         </mxCell>
         <mxCell id="RPfYvq4qA6KvcjTwU50I-53" value="Enviar Comandos UI/UX" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-          <mxGeometry x="520" y="180" width="120" height="60" as="geometry" />
+          <mxGeometry x="520" y="100" width="120" height="60" as="geometry" />
         </mxCell>
         <mxCell id="RPfYvq4qA6KvcjTwU50I-60" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" parent="1" edge="1">
           <mxGeometry relative="1" as="geometry">
@@ -351,16 +351,16 @@
           <mxGeometry x="680" y="260" width="120" height="60" as="geometry" />
         </mxCell>
         <mxCell id="UrDL7ryQ4zRzl5t7BnsZ-42" value="Error Temp &lt;br&gt;(o lectura)" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="830" y="260" width="120" height="60" as="geometry" />
+          <mxGeometry x="840" y="260" width="120" height="60" as="geometry" />
         </mxCell>
         <mxCell id="UrDL7ryQ4zRzl5t7BnsZ-43" value="Trigger" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="980" y="260" width="120" height="60" as="geometry" />
+          <mxGeometry x="1000" y="260" width="120" height="60" as="geometry" />
         </mxCell>
         <mxCell id="UrDL7ryQ4zRzl5t7BnsZ-44" value="Escala VI" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="1130" y="260" width="120" height="60" as="geometry" />
+          <mxGeometry x="840" y="180" width="120" height="60" as="geometry" />
         </mxCell>
         <mxCell id="UrDL7ryQ4zRzl5t7BnsZ-45" value="ETH" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="1280" y="260" width="120" height="60" as="geometry" />
+          <mxGeometry x="1160" y="260" width="120" height="60" as="geometry" />
         </mxCell>
         <mxCell id="UrDL7ryQ4zRzl5t7BnsZ-46" value="Seter DAC (valor)" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
           <mxGeometry x="1000" y="1230" width="120" height="60" as="geometry" />
