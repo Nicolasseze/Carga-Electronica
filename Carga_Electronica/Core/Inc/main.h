@@ -59,10 +59,13 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define TRIGGER_Pin GPIO_PIN_13
 #define TRIGGER_GPIO_Port GPIOC
+
 #define CONX_Pin GPIO_PIN_14
 #define CONX_GPIO_Port GPIOC
+
 #define ERROR2_Pin GPIO_PIN_15
 #define ERROR2_GPIO_Port GPIOC
+
 #define ETH_RST_Pin GPIO_PIN_3
 #define ETH_RST_GPIO_Port GPIOA
 #define ETH_CS_Pin GPIO_PIN_4
@@ -73,28 +76,36 @@ void Error_Handler(void);
 #define ETH_MISO_GPIO_Port GPIOA
 #define ETH_MOSI_Pin GPIO_PIN_7
 #define ETH_MOSI_GPIO_Port GPIOA
+
 #define LM35_Pin GPIO_PIN_0
 #define LM35_GPIO_Port GPIOB
+
 #define ERROR1_Pin GPIO_PIN_1
 #define ERROR1_GPIO_Port GPIOB
+
 #define UX_SCK_Pin GPIO_PIN_13
 #define UX_SCK_GPIO_Port GPIOB
 #define UX_MISO_Pin GPIO_PIN_14
 #define UX_MISO_GPIO_Port GPIOB
 #define UX_MOSI_Pin GPIO_PIN_15
 #define UX_MOSI_GPIO_Port GPIOB
+
 #define I_SCALE_Pin GPIO_PIN_9
 #define I_SCALE_GPIO_Port GPIOA
+
 #define USER_KEY_Pin GPIO_PIN_10
 #define USER_KEY_GPIO_Port GPIOA
 #define USER_LED_Pin GPIO_PIN_11
 #define USER_LED_GPIO_Port GPIOA
+
 #define V_SCALE_Pin GPIO_PIN_12
 #define V_SCALE_GPIO_Port GPIOA
+
 #define I2C_SCL_Pin GPIO_PIN_6
 #define I2C_SCL_GPIO_Port GPIOB
 #define I2C_SDA_Pin GPIO_PIN_7
 #define I2C_SDA_GPIO_Port GPIOB
+
 #define ADC_RDY_Pin GPIO_PIN_8
 #define ADC_RDY_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */

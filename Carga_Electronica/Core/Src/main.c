@@ -22,7 +22,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "string.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -32,6 +32,8 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define MCP4725_ADDR  0b10000000
+#define MASK_DAC_READ 0b00001111
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -49,6 +51,8 @@ SPI_HandleTypeDef hspi2;
 
 osThreadId defaultTaskHandle;
 /* USER CODE BEGIN PV */
+uint16_t i2cRX;
+//osThreadID
 
 /* USER CODE END PV */
 
@@ -62,7 +66,7 @@ static void MX_SPI2_Init(void);
 void StartDefaultTask(void const * argument);
 
 /* USER CODE BEGIN PFP */
-
+void DAC_init(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -414,7 +418,32 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+void DAC_init(void){	//NOK
+	//Leer EEPROM y checkear que este en 0; Sino cambiarlo.
+	uint8_t buffer[5];
+	memset(buffer,0,5);
+	HAL_I2C_Master_Receive_IT(&hi2c1, MCP4725_ADDR, buffer, 5);
+	//Cargo el valor recibido del buffer a una variable para tener el valor de la eeprom.
+	i2cRX = (buffer[3]<<8) || buffer[4];
+	//Mascareo de rutix
+	i2cRX &= MASK_DAC_READ;
 
+	//Si el valor de la eeprom no es 0 lo cargo.
+	if(!i2cRX){
+		buffer[0]=0b01100000;
+		buffer[1]=0;
+		buffer[2]=0;
+		HAL_I2C_Master_Transmit_IT(&hi2c1, MCP4725_ADDR, buffer, 3);
+		do{
+			i2cRX = HAL_I2C_Master_Receive_IT(&hi2c1, MCP4725_ADDR, buffer, 1) && 0b10000000;
+		}while(!i2cRX);
+	}else{
+		//Reset
+		buffer[0]=0;
+		buffer[1]=0;
+		HAL_I2C_Master_Transmit_IT(&hi2c1, MCP4725_ADDR, buffer, 2);
+	}
+}
 /* USER CODE END 4 */
 
 /* USER CODE BEGIN Header_StartDefaultTask */
@@ -427,6 +456,9 @@ static void MX_GPIO_Init(void)
 void StartDefaultTask(void const * argument)
 {
   /* USER CODE BEGIN 5 */
+	DAC_init();
+
+
   /* Infinite loop */
   for(;;)
   {
