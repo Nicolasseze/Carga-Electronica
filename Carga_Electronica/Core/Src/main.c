@@ -32,8 +32,11 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define MCP4725_ADDR  0b10000000
+#define MCP4725_ADDR  0b1100000 << 1
 #define MASK_DAC_READ 0b00001111
+
+//CALIBRACIONES
+#define CAL_SETPOINT_VALUE 0
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -67,6 +70,7 @@ void StartDefaultTask(void const * argument);
 
 /* USER CODE BEGIN PFP */
 void DAC_init(void);
+void DAC_set(float setPoint);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -365,6 +369,8 @@ static void MX_SPI2_Init(void)
 static void MX_GPIO_Init(void)
 {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
+/* USER CODE BEGIN MX_GPIO_Init_1 */
+/* USER CODE END MX_GPIO_Init_1 */
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOC_CLK_ENABLE();
@@ -415,6 +421,8 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(ADC_RDY_GPIO_Port, &GPIO_InitStruct);
 
+/* USER CODE BEGIN MX_GPIO_Init_2 */
+/* USER CODE END MX_GPIO_Init_2 */
 }
 
 /* USER CODE BEGIN 4 */
@@ -422,27 +430,39 @@ void DAC_init(void){	//NOK
 	//Leer EEPROM y checkear que este en 0; Sino cambiarlo.
 	uint8_t buffer[5];
 	memset(buffer,0,5);
-	HAL_I2C_Master_Receive_IT(&hi2c1, MCP4725_ADDR, buffer, 5);
+	HAL_I2C_Master_Transmit(&hi2c1,MCP4725_ADDR, buffer, 2,HAL_MAX_DELAY);
+	HAL_I2C_Master_Receive(&hi2c1, MCP4725_ADDR, buffer, 5,HAL_MAX_DELAY);
 	//Cargo el valor recibido del buffer a una variable para tener el valor de la eeprom.
 	i2cRX = (buffer[3]<<8) || buffer[4];
 	//Mascareo de rutix
 	i2cRX &= MASK_DAC_READ;
 
 	//Si el valor de la eeprom no es 0 lo cargo.
-	if(!i2cRX){
+	if(i2cRX){
 		buffer[0]=0b01100000;
 		buffer[1]=0;
 		buffer[2]=0;
-		HAL_I2C_Master_Transmit_IT(&hi2c1, MCP4725_ADDR, buffer, 3);
+		HAL_I2C_Master_Transmit(&hi2c1, MCP4725_ADDR, buffer, 3,HAL_MAX_DELAY);
 		do{
-			i2cRX = HAL_I2C_Master_Receive_IT(&hi2c1, MCP4725_ADDR, buffer, 1) && 0b10000000;
+			i2cRX = HAL_I2C_Master_Receive(&hi2c1, MCP4725_ADDR, buffer, 1,HAL_MAX_DELAY) && 0b10000000;
 		}while(!i2cRX);
 	}else{
 		//Reset
 		buffer[0]=0;
 		buffer[1]=0;
-		HAL_I2C_Master_Transmit_IT(&hi2c1, MCP4725_ADDR, buffer, 2);
+		HAL_I2C_Master_Transmit(&hi2c1, MCP4725_ADDR, buffer, 2,HAL_MAX_DELAY);
 	}
+}
+void DAC_set(float setPoint){	//setPoint = valor en mV.
+	uint8_t buffer[2];
+
+	if(setPoint<0 || setPoint>=5000)
+		return HAL_I2C_Master_Transmit(&hi2c1, MCP4725_ADDR, 0, 2,HAL_MAX_DELAY);
+
+	setPoint=((setPoint+CAL_SETPOINT_VALUE)*4096)/5000;
+	buffer[0]=((uint16_t) setPoint)>>8;
+	buffer[1]=((uint16_t) setPoint);
+	HAL_I2C_Master_Transmit(&hi2c1, MCP4725_ADDR, buffer, 2,HAL_MAX_DELAY);
 }
 /* USER CODE END 4 */
 
@@ -463,6 +483,16 @@ void StartDefaultTask(void const * argument)
   for(;;)
   {
     osDelay(1);
+    DAC_set(100);
+    DAC_set(500);
+    DAC_set(1000);
+    DAC_set(2000);
+    DAC_set(4000);
+    DAC_set(4999);
+    DAC_set(7000);
+    DAC_set(2500);
+    DAC_set(-10);
+
   }
   /* USER CODE END 5 */
 }
