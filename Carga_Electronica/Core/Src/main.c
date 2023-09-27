@@ -23,6 +23,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "string.h"
+#include "adc_function.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -74,8 +75,6 @@ void StartDefaultTask(void const * argument);
 void DAC_init(void);
 void DAC_set(float setPoint);
 
-void ADC_init (uint8_t mux);
-uint16_t ADC_read (void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -498,6 +497,9 @@ void StartDefaultTask(void const * argument)
     DAC_set(7000);
     DAC_set(2500);
     DAC_set(-10);
+
+    ADC_read_corriente(&hi2c1);
+    ADC_read_tension(&hi2c1);
 
   }
   /* USER CODE END 5 */
