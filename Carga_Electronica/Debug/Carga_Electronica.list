@@ -35,15 +35,15 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY, DEBUGGING, OCTETS
  15 .debug_ranges 00000d68  00000000  00000000  00031f60  2**3
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 16 .debug_macro  00018461  00000000  00000000  00032cc8  2**0
+ 16 .debug_macro  000033ad  00000000  00000000  00032cc8  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 17 .debug_line   000106fb  00000000  00000000  0004b129  2**0
+ 17 .debug_line   000106fb  00000000  00000000  00036075  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 18 .debug_str    0009af13  00000000  00000000  0005b824  2**0
+ 18 .debug_str    0009af1d  00000000  00000000  00046770  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 19 .comment      00000050  00000000  00000000  000f6737  2**0
+ 19 .comment      00000050  00000000  00000000  000e168d  2**0
                   CONTENTS, READONLY
- 20 .debug_frame  00003b84  00000000  00000000  000f6788  2**2
+ 20 .debug_frame  00003b84  00000000  00000000  000e16e0  2**2
                   CONTENTS, READONLY, DEBUGGING, OCTETS
 
 Disassembly of section .text:
@@ -1306,7 +1306,7 @@ void DAC_set(float setPoint){	//setPoint = valor en mV.
  8000a74:	f001 f8c0 	bl	8001bf8 <HAL_I2C_Master_Transmit>
  8000a78:	e02d      	b.n	8000ad6 <DAC_set+0x9a>
 
-	setPoint=((setPoint+CAL_SETPOINT_VALUE)*4096)/5000;
+	setPoint=((setPoint+CAL_DAC_VALUE)*4096)/5000;
  8000a7a:	edd7 7a01 	vldr	s15, [r7, #4]
  8000a7e:	ed9f 7a19 	vldr	s14, [pc, #100]	; 8000ae4 <DAC_set+0xa8>
  8000a82:	ee77 7a87 	vadd.f32	s15, s15, s14

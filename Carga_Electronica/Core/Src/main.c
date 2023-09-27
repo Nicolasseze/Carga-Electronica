@@ -32,11 +32,13 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define MCP4725_ADDR  0b1100000 << 1
-#define MASK_DAC_READ 0b00001111
+
+//Definiciones DAC - MCP4725
+#define MCP4725_ADDR 	0b1100000 << 1
+#define MASK_DAC_READ 	0b00001111
 
 //CALIBRACIONES
-#define CAL_SETPOINT_VALUE 0
+#define CAL_DAC_VALUE 0
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -71,6 +73,9 @@ void StartDefaultTask(void const * argument);
 /* USER CODE BEGIN PFP */
 void DAC_init(void);
 void DAC_set(float setPoint);
+
+void ADC_init (uint8_t mux);
+uint16_t ADC_read (void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -459,11 +464,12 @@ void DAC_set(float setPoint){	//setPoint = valor en mV.
 	if(setPoint<0 || setPoint>=5000)
 		return HAL_I2C_Master_Transmit(&hi2c1, MCP4725_ADDR, 0, 2,HAL_MAX_DELAY);
 
-	setPoint=((setPoint+CAL_SETPOINT_VALUE)*4096)/5000;
+	setPoint=((setPoint+CAL_DAC_VALUE)*4096)/5000;
 	buffer[0]=((uint16_t) setPoint)>>8;
 	buffer[1]=((uint16_t) setPoint);
 	HAL_I2C_Master_Transmit(&hi2c1, MCP4725_ADDR, buffer, 2,HAL_MAX_DELAY);
 }
+
 /* USER CODE END 4 */
 
 /* USER CODE BEGIN Header_StartDefaultTask */

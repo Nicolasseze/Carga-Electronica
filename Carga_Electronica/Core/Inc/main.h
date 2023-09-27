@@ -99,7 +99,8 @@ void Error_Handler(void);
 #define ADC_RDY_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
-
+//Definicion Hardware
+#define ADC_HW	ADS1115
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus
