@@ -83,6 +83,8 @@ void Error_Handler(void);
 #define UX_MISO_GPIO_Port GPIOB
 #define UX_MOSI_Pin GPIO_PIN_15
 #define UX_MOSI_GPIO_Port GPIOB
+#define V_INV_Pin GPIO_PIN_8
+#define V_INV_GPIO_Port GPIOA
 #define I_SCALE_Pin GPIO_PIN_9
 #define I_SCALE_GPIO_Port GPIOA
 #define USER_KEY_Pin GPIO_PIN_10
@@ -95,8 +97,6 @@ void Error_Handler(void);
 #define I2C_SCL_GPIO_Port GPIOB
 #define I2C_SDA_Pin GPIO_PIN_7
 #define I2C_SDA_GPIO_Port GPIOB
-#define ADC_RDY_Pin GPIO_PIN_8
-#define ADC_RDY_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 //Definicion Hardware

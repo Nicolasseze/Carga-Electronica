@@ -48,7 +48,7 @@ uint16_t ADC_read_tension (I2C_HandleTypeDef *hi2c){
 
 	HAL_I2C_Master_Receive(hi2c, ADC_ADDR, buffer, 2, HAL_MAX_DELAY);
 
-	buffer16 = buffer[0] << 8 || buffer[1];
+	buffer16 = buffer[0] << 8 | buffer[1];
 
 	return buffer16;
 }
@@ -62,7 +62,7 @@ uint16_t ADC_read_corriente (I2C_HandleTypeDef *hi2c){
 
 	HAL_I2C_Master_Receive(hi2c, ADC_ADDR, buffer, 2, HAL_MAX_DELAY);
 
-	buffer16 = buffer[0] << 8 || buffer[1];
+	buffer16 = buffer[0] << 8 | buffer[1];
 
 	return buffer16;
 }

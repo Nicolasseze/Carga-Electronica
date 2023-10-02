@@ -28,6 +28,15 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
+enum modos {off, corriente_constante, tension_constante, potencia_constante, fusible_electronico};
+
+/* Estructura estado modo de la carga electronica */
+typedef struct {
+
+	enum modos modo; 					/* Modo de trabajo de la carga electronica */
+	float valor;						/* Set point trabajo de la carga electronica */
+
+} CARGA_HandleTypeDef;
 
 /* USER CODE END PTD */
 
@@ -56,9 +65,13 @@ SPI_HandleTypeDef hspi1;
 SPI_HandleTypeDef hspi2;
 
 osThreadId defaultTaskHandle;
+osThreadId tarea_carga_conHandle;
+osThreadId tarea_errorHandle;
 /* USER CODE BEGIN PV */
-uint16_t i2cRX;
-//osThreadID
+/* Declaracion de colas */
+//
+osPoolId mpool1;
+osMessageQId QueueCargaControlHandle;
 
 /* USER CODE END PV */
 
@@ -70,6 +83,8 @@ static void MX_I2C1_Init(void);
 static void MX_SPI1_Init(void);
 static void MX_SPI2_Init(void);
 void StartDefaultTask(void const * argument);
+void tarea_carga_control(void const * argument);
+void tarea_error_handler(void const * argument);
 
 /* USER CODE BEGIN PFP */
 void DAC_init(void);
@@ -132,12 +147,26 @@ int main(void)
 
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
+  /* definition and creation de Cola Control Carga Electronica */
+  osPoolDef(mpool1, 2, CARGA_HandleTypeDef);
+  mpool1 = osPoolCreate(osPool(mpool1));
+  osMessageQDef(QueueCargaControlHandle, 2, &CARGA_HandleTypeDef);
+  QueueCargaControlHandle = osMessageCreate(osMessageQ(QueueCargaControlHandle), NULL);
+
   /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
   /* definition and creation of defaultTask */
   osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 128);
   defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
+
+  /* definition and creation of tarea_carga_con */
+  osThreadDef(tarea_carga_con, tarea_carga_control, osPriorityBelowNormal, 0, 128);
+  tarea_carga_conHandle = osThreadCreate(osThread(tarea_carga_con), NULL);
+
+  /* definition and creation of tarea_error */
+  osThreadDef(tarea_error, tarea_error_handler, osPriorityAboveNormal, 0, 128);
+  tarea_errorHandle = osThreadCreate(osThread(tarea_error), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -271,7 +300,7 @@ static void MX_I2C1_Init(void)
 
   /* USER CODE END I2C1_Init 1 */
   hi2c1.Instance = I2C1;
-  hi2c1.Init.ClockSpeed = 400000;
+  hi2c1.Init.ClockSpeed = 100000;
   hi2c1.Init.DutyCycle = I2C_DUTYCYCLE_2;
   hi2c1.Init.OwnAddress1 = 0;
   hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
@@ -413,25 +442,27 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(ERROR1_GPIO_Port, &GPIO_InitStruct);
 
+  /*Configure GPIO pin : V_INV_Pin */
+  GPIO_InitStruct.Pin = V_INV_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(V_INV_GPIO_Port, &GPIO_InitStruct);
+
   /*Configure GPIO pin : USER_KEY_Pin */
   GPIO_InitStruct.Pin = USER_KEY_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(USER_KEY_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : ADC_RDY_Pin */
-  GPIO_InitStruct.Pin = ADC_RDY_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(ADC_RDY_GPIO_Port, &GPIO_InitStruct);
-
 /* USER CODE BEGIN MX_GPIO_Init_2 */
 /* USER CODE END MX_GPIO_Init_2 */
 }
 
 /* USER CODE BEGIN 4 */
-void DAC_init(void){	//NOK
+void DAC_init(void){
 	//Leer EEPROM y checkear que este en 0; Sino cambiarlo.
+	uint16_t i2cRX;
+
 	uint8_t buffer[5];
 	memset(buffer,0,5);
 	HAL_I2C_Master_Transmit(&hi2c1,MCP4725_ADDR, buffer, 2,HAL_MAX_DELAY);
@@ -481,28 +512,59 @@ void DAC_set(float setPoint){	//setPoint = valor en mV.
 void StartDefaultTask(void const * argument)
 {
   /* USER CODE BEGIN 5 */
-	DAC_init();
 
+  /* Infinite loop */
+  for(;;)
+  {
+
+  }
+  /* USER CODE END 5 */
+}
+
+/* USER CODE BEGIN Header_tarea_carga_control */
+/**
+* @brief Function implementing the tarea_carga_con thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_tarea_carga_control */
+void tarea_carga_control(void const * argument)
+{
+  /* USER CODE BEGIN tarea_carga_control */
+	CARGA_HandleTypeDef *ptr;
+	osEvent evt;
+
+	evt = osMessageGet(QueueCargaControlHandle, osWaitForever);
+	if(evt.status == osEventMessage){
+		ptr = evt.value.p;
+
+		osPoolFree(mpool1, ptr);
+	}
 
   /* Infinite loop */
   for(;;)
   {
     osDelay(1);
-    DAC_set(100);
-    DAC_set(500);
-    DAC_set(1000);
-    DAC_set(2000);
-    DAC_set(4000);
-    DAC_set(4999);
-    DAC_set(7000);
-    DAC_set(2500);
-    DAC_set(-10);
-
-    ADC_read_corriente(&hi2c1);
-    ADC_read_tension(&hi2c1);
-
   }
-  /* USER CODE END 5 */
+  /* USER CODE END tarea_carga_control */
+}
+
+/* USER CODE BEGIN Header_tarea_error_handler */
+/**
+* @brief Function implementing the tarea_error thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_tarea_error_handler */
+void tarea_error_handler(void const * argument)
+{
+  /* USER CODE BEGIN tarea_error_handler */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END tarea_error_handler */
 }
 
 /**
