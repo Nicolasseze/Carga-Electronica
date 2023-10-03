@@ -39,7 +39,7 @@
 /* Private functions ---------------------------------------------------------*/
 static void ADC_set (I2C_HandleTypeDef *hi2c, enum input_to_measure entrada);
 
-uint16_t ADC_read_tension (I2C_HandleTypeDef *hi2c){
+float ADC_read_tension (I2C_HandleTypeDef *hi2c){
 
 	uint8_t buffer[2];
 	uint16_t buffer16;
@@ -50,13 +50,13 @@ uint16_t ADC_read_tension (I2C_HandleTypeDef *hi2c){
 
 	buffer16 = buffer[0] << 8 | buffer[1];
 
-	return buffer16;
+	return buffer16*SCALE_TENSION+80000; //Devuelvo mV //Sumo la mitad por diferencial
 }
 
-uint16_t ADC_read_corriente (I2C_HandleTypeDef *hi2c){
+float ADC_read_corriente (I2C_HandleTypeDef *hi2c){
 
 	uint8_t buffer[2];
-	uint16_t buffer16;
+	int16_t buffer16;
 
 	ADC_set(hi2c, corriente);
 
@@ -64,7 +64,7 @@ uint16_t ADC_read_corriente (I2C_HandleTypeDef *hi2c){
 
 	buffer16 = buffer[0] << 8 | buffer[1];
 
-	return buffer16;
+	return (buffer16*SCALE_CORRIENTE)+15000; //Devuelvo mA //Sumo la mitad por diferencial
 }
 
 

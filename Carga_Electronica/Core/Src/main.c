@@ -31,6 +31,7 @@
 enum modos {off, corriente_constante, tension_constante, potencia_constante, fusible_electronico};
 
 /* Estructura estado modo de la carga electronica */
+//valor para corriente_constante en mA
 typedef struct {
 
 	enum modos modo; 					/* Modo de trabajo de la carga electronica */
@@ -516,7 +517,7 @@ void StartDefaultTask(void const * argument)
   /* Infinite loop */
   for(;;)
   {
-
+    osDelay(1);
   }
   /* USER CODE END 5 */
 }
@@ -534,17 +535,45 @@ void tarea_carga_control(void const * argument)
 	CARGA_HandleTypeDef *ptr;
 	osEvent evt;
 
-	evt = osMessageGet(QueueCargaControlHandle, osWaitForever);
-	if(evt.status == osEventMessage){
-		ptr = evt.value.p;
+  float tension=0,corriente=0;
 
-		osPoolFree(mpool1, ptr);
-	}
 
   /* Infinite loop */
   for(;;)
   {
-    osDelay(1);
+	evt = osMessageGet(QueueCargaControlHandle, osWaitForever);
+	if(evt.status == osEventMessage){
+		ptr = evt.value.p;
+		osPoolFree(mpool1, ptr);
+	}
+  //recibi modo y valor en *ptr desde martin-eth
+  
+  //leo ADC
+  tension = ADC_read_tension(&hi2c1);
+  corriente = ADC_read_corriente(&hi2c1);
+  
+  //En base al modo decido:
+  switch (ptr->modos)
+  {
+    case corriente_constante:
+      //No hago una chota porque es analogico
+      DAC_set(ptr->valor/10); //Ajusto de mA -->mV para el DAC
+      //EnviarDatosMartin();
+      break;
+    
+    case tension_constante:
+      break;
+    case potencia_constante:
+      break;
+    case fusible_electronico:
+      break;
+    case off:
+      break;
+    
+    default:
+      break;
+  }
+    
   }
   /* USER CODE END tarea_carga_control */
 }
