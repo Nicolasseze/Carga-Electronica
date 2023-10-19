@@ -151,7 +151,7 @@ int main(void)
   /* definition and creation de Cola Control Carga Electronica */
   osPoolDef(mpool1, 2, CARGA_HandleTypeDef);
   mpool1 = osPoolCreate(osPool(mpool1));
-  osMessageQDef(QueueCargaControlHandle, 2, &CARGA_HandleTypeDef);
+  osMessageQDef(QueueCargaControlHandle, 2, CARGA_HandleTypeDef);
   QueueCargaControlHandle = osMessageCreate(osMessageQ(QueueCargaControlHandle), NULL);
 
   /* USER CODE END RTOS_QUEUES */
@@ -513,10 +513,15 @@ void DAC_set(float setPoint){	//setPoint = valor en mV.
 void StartDefaultTask(void const * argument)
 {
   /* USER CODE BEGIN 5 */
-
+	float var=0;
+	DAC_init();
   /* Infinite loop */
   for(;;)
   {
+
+
+	var=100;
+	DAC_set(100);
     osDelay(1);
   }
   /* USER CODE END 5 */
@@ -537,7 +542,9 @@ void tarea_carga_control(void const * argument)
 
   float tension=0,corriente=0;
 
-
+  while (1){
+	  osDelay(1000);
+  }
   /* Infinite loop */
   for(;;)
   {
@@ -553,7 +560,7 @@ void tarea_carga_control(void const * argument)
   corriente = ADC_read_corriente(&hi2c1);
   
   //En base al modo decido:
-  switch (ptr->modos)
+  switch (ptr->modo)
   {
     case corriente_constante:
       //No hago una chota porque es analogico
