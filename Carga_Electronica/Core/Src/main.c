@@ -541,6 +541,7 @@ void tarea_carga_control(void const * argument)
 	osEvent evt;
 
   float tension=0,corriente=0;
+  float valorSet=0;
 
   while (1){
 	  osDelay(1000);
@@ -569,11 +570,30 @@ void tarea_carga_control(void const * argument)
       break;
     
     case tension_constante:
-      break;
-    case potencia_constante:
-      break;
-    case fusible_electronico:
-      break;
+		//Necesito saber el valor actual para poder ajustar el dac que modifica la corriente y mantiene la tensión.
+		if(tension > ptr->valor){
+			valorSet++;
+		}else {
+			valorSet--;
+		}
+		DAC_set(valorSet);
+	  break;
+
+	case potencia_constante:
+		if((tension*corriente) > ptr->valor){
+			valorSet++;
+			}else {
+				valorSet--;
+			}
+		DAC_set(valorSet);
+	  break;
+
+	case fusible_electronico:
+		if(corriente>ptr->valor){
+			//rutina de CORTAR con error??? && ir a off?
+			__asm("nop");
+		}
+	  break;
     case off:
       break;
     
