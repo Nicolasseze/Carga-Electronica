@@ -541,7 +541,7 @@ void tarea_carga_control(void const * argument)
 	osEvent evt;
 
   float tension=0,corriente=0;
-  float valorSet=0;
+  float valorSet=0,error=0,Kp=0;
 
   while (1){
 	  osDelay(1000);
@@ -571,20 +571,24 @@ void tarea_carga_control(void const * argument)
     
     case tension_constante:
 		//Necesito saber el valor actual para poder ajustar el dac que modifica la corriente y mantiene la tensión.
-		if(tension > ptr->valor){
+	/*	if(tension > ptr->valor){
 			valorSet++;
 		}else {
 			valorSet--;
-		}
+		}*/
+
+    	error= (tension - ptr->valor);	//Probar si necesita valor de pasaje de unidades.
+    	valorSet = error*Kp;
 		DAC_set(valorSet);
 	  break;
 
 	case potencia_constante:
-		if((tension*corriente) > ptr->valor){
+		/*if((tension*corriente) > ptr->valor){
 			valorSet++;
 			}else {
 				valorSet--;
-			}
+			}*/
+		valorSet = (ptr->valor/tension)/10; //potencia en mW y el /10 es para ajustar de mA a mV por DAC;
 		DAC_set(valorSet);
 	  break;
 

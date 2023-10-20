@@ -9,5 +9,5 @@
 ../Core/Src/main.c:492:6:DAC_set	3
 ../Core/Src/main.c:513:6:StartDefaultTask	1
 ../Core/Src/main.c:537:6:tarea_carga_control	1
-../Core/Src/main.c:614:6:tarea_error_handler	1
-../Core/Src/main.c:629:6:Error_Handler	1
+../Core/Src/main.c:619:6:tarea_error_handler	1
+../Core/Src/main.c:634:6:Error_Handler	1
