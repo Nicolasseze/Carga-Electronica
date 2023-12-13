@@ -34,8 +34,11 @@ enum modos {off, corriente_constante, tension_constante, potencia_constante, fus
 //valor para corriente_constante en mA
 typedef struct {
 
-	enum modos modo; 					/* Modo de trabajo de la carga electronica */
-	float valor;						/* Set point trabajo de la carga electronica */
+	enum modos modo; 				/* Modo de trabajo de la carga electronica */
+	float valor;					/* Set point trabajo de la carga electronica */
+	float tension;					/* Valor de lectura tension */
+	uint8_t escala_tension;		/* 0 Escala 16V / 1 Escala 160V */
+	float corriente;				/* Valor de lectura corriente */
 
 } CARGA_HandleTypeDef;
 
@@ -66,11 +69,12 @@ SPI_HandleTypeDef hspi1;
 SPI_HandleTypeDef hspi2;
 
 osThreadId defaultTaskHandle;
-osThreadId tarea_carga_conHandle;
-osThreadId tarea_errorHandle;
+osThreadId tarea_cargacontHandle;
+osThreadId tarea_lecturaHandle;
 /* USER CODE BEGIN PV */
+MEASURE_HandleTypeDef hmeasure;
+
 /* Declaracion de colas */
-//
 osPoolId mpool1;
 osMessageQId QueueCargaControlHandle;
 
@@ -85,11 +89,12 @@ static void MX_SPI1_Init(void);
 static void MX_SPI2_Init(void);
 void StartDefaultTask(void const * argument);
 void tarea_carga_control(void const * argument);
-void tarea_error_handler(void const * argument);
+void lectura_datos(void const * argument);
 
 /* USER CODE BEGIN PFP */
 void DAC_init(void);
 void DAC_set(float setPoint);
+uint16_t Read_ADC(void);
 
 /* USER CODE END PFP */
 
@@ -153,21 +158,20 @@ int main(void)
   mpool1 = osPoolCreate(osPool(mpool1));
   osMessageQDef(QueueCargaControlHandle, 2, CARGA_HandleTypeDef);
   QueueCargaControlHandle = osMessageCreate(osMessageQ(QueueCargaControlHandle), NULL);
-
   /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
   /* definition and creation of defaultTask */
-  osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 128);
+  osThreadDef(defaultTask, StartDefaultTask, osPriorityBelowNormal, 0, 128);
   defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
 
-  /* definition and creation of tarea_carga_con */
-  osThreadDef(tarea_carga_con, tarea_carga_control, osPriorityBelowNormal, 0, 128);
-  tarea_carga_conHandle = osThreadCreate(osThread(tarea_carga_con), NULL);
+  /* definition and creation of tarea_cargacont */
+  osThreadDef(tarea_cargacont, tarea_carga_control, osPriorityNormal, 0, 128);
+  tarea_cargacontHandle = osThreadCreate(osThread(tarea_cargacont), NULL);
 
-  /* definition and creation of tarea_error */
-  osThreadDef(tarea_error, tarea_error_handler, osPriorityAboveNormal, 0, 128);
-  tarea_errorHandle = osThreadCreate(osThread(tarea_error), NULL);
+  /* definition and creation of tarea_lectura */
+  osThreadDef(tarea_lectura, lectura_datos, osPriorityAboveNormal, 0, 128);
+  tarea_lecturaHandle = osThreadCreate(osThread(tarea_lectura), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -257,7 +261,7 @@ static void MX_ADC1_Init(void)
   hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
   hadc1.Init.Resolution = ADC_RESOLUTION_12B;
   hadc1.Init.ScanConvMode = DISABLE;
-  hadc1.Init.ContinuousConvMode = DISABLE;
+  hadc1.Init.ContinuousConvMode = ENABLE;
   hadc1.Init.DiscontinuousConvMode = DISABLE;
   hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
   hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
@@ -461,16 +465,16 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 void DAC_init(void){
+
 	//Leer EEPROM y checkear que este en 0; Sino cambiarlo.
 	uint16_t i2cRX;
-
 	uint8_t buffer[5];
 	memset(buffer,0,5);
 	HAL_I2C_Master_Transmit(&hi2c1,MCP4725_ADDR, buffer, 2,HAL_MAX_DELAY);
 	HAL_I2C_Master_Receive(&hi2c1, MCP4725_ADDR, buffer, 5,HAL_MAX_DELAY);
+
 	//Cargo el valor recibido del buffer a una variable para tener el valor de la eeprom.
 	i2cRX = (buffer[3]<<8) || buffer[4];
-	//Mascareo de rutix
 	i2cRX &= MASK_DAC_READ;
 
 	//Si el valor de la eeprom no es 0 lo cargo.
@@ -489,6 +493,7 @@ void DAC_init(void){
 		HAL_I2C_Master_Transmit(&hi2c1, MCP4725_ADDR, buffer, 2,HAL_MAX_DELAY);
 	}
 }
+
 void DAC_set(float setPoint){	//setPoint = valor en mV.
 	uint8_t buffer[2];
 
@@ -499,6 +504,23 @@ void DAC_set(float setPoint){	//setPoint = valor en mV.
 	buffer[0]=((uint16_t) setPoint)>>8;
 	buffer[1]=((uint16_t) setPoint);
 	HAL_I2C_Master_Transmit(&hi2c1, MCP4725_ADDR, buffer, 2,HAL_MAX_DELAY);
+}
+
+uint16_t Read_ADC(void) {
+    uint16_t adc_value = 0;
+    // Iniciar la conversión
+    HAL_ADC_Start(&hadc1);
+
+    // Esperar a que la conversión se complete
+    if (HAL_ADC_PollForConversion(&hadc1, 10) == HAL_OK) { // Timeout de 10ms
+        // Leer el valor convertido
+        adc_value = HAL_ADC_GetValue(&hadc1);
+    }
+
+    // Detener el ADC después de la lectura
+    HAL_ADC_Stop(&hadc1);
+
+    return adc_value;
 }
 
 /* USER CODE END 4 */
@@ -513,16 +535,11 @@ void DAC_set(float setPoint){	//setPoint = valor en mV.
 void StartDefaultTask(void const * argument)
 {
   /* USER CODE BEGIN 5 */
-	float var=0;
-	DAC_init();
+
   /* Infinite loop */
   for(;;)
   {
 
-
-	var=100;
-	DAC_set(100);
-    osDelay(1);
   }
   /* USER CODE END 5 */
 }
@@ -536,95 +553,76 @@ void StartDefaultTask(void const * argument)
 /* USER CODE END Header_tarea_carga_control */
 void tarea_carga_control(void const * argument)
 {
-  /* USER CODE BEGIN tarea_carga_control */
+	/* USER CODE BEGIN tarea_carga_control */
 	CARGA_HandleTypeDef *ptr;
 	osEvent evt;
 
-  float tension=0,corriente=0;
-  float valorSet=0,error=0,Kp=0;
+	CARGA_HandleTypeDef control_carga;
+	control_carga.modo = corriente_constante;
+	control_carga.valor = 1000;
 
-  while (1){
-	  osDelay(1000);
-  }
-  /* Infinite loop */
-  for(;;)
-  {
+	DAC_init();
+
+	/* Infinite loop */
+	for(;;)
+	{/*
 	evt = osMessageGet(QueueCargaControlHandle, osWaitForever);
 	if(evt.status == osEventMessage){
 		ptr = evt.value.p;
 		osPoolFree(mpool1, ptr);
 	}
-  //recibi modo y valor en *ptr desde martin-eth
-  
-  //leo ADC
-  tension = ADC_read_tension(&hi2c1);
-  corriente = ADC_read_corriente(&hi2c1);
-  
-  //En base al modo decido:
-  switch (ptr->modo)
-  {
-    case corriente_constante:
-      //No hago una chota porque es analogico
-      DAC_set(ptr->valor/10); //Ajusto de mA -->mV para el DAC
-      //EnviarDatosMartin();
-      break;
-    
-    case tension_constante:
-		//Necesito saber el valor actual para poder ajustar el dac que modifica la corriente y mantiene la tensión.
-	/*	if(tension > ptr->valor){
-			valorSet++;
-		}else {
-			valorSet--;
-		}*/
+	 */
 
-    	error= (tension - ptr->valor);	//Probar si necesita valor de pasaje de unidades.
-    	valorSet = error*Kp;
-		DAC_set(valorSet);
-	  break;
+		//En base al modo decido:
+		switch (control_carga.modo)
+		{
+		case corriente_constante:
+			DAC_set(control_carga.valor/10); //Ajusto de mA -->mV para el DAC
+			break;
 
-	case potencia_constante:
-		/*if((tension*corriente) > ptr->valor){
-			valorSet++;
-			}else {
-				valorSet--;
-			}*/
-		valorSet = (ptr->valor/tension)/10; //potencia en mW y el /10 es para ajustar de mA a mV por DAC;
-		DAC_set(valorSet);
-	  break;
+		case tension_constante:
+			break;
 
-	case fusible_electronico:
-		if(corriente>ptr->valor){
-			//rutina de CORTAR con error??? && ir a off?
-			__asm("nop");
+		case potencia_constante:
+			break;
+
+		case fusible_electronico:
+			break;
+
+		case off:
+			break;
+
+		default:
+			break;
 		}
-	  break;
-    case off:
-      break;
-    
-    default:
-      break;
-  }
-    
-  }
+
+	}
   /* USER CODE END tarea_carga_control */
 }
 
-/* USER CODE BEGIN Header_tarea_error_handler */
+/* USER CODE BEGIN Header_lectura_datos */
 /**
-* @brief Function implementing the tarea_error thread.
+* @brief Function implementing the tarea_lectura thread.
 * @param argument: Not used
 * @retval None
 */
-/* USER CODE END Header_tarea_error_handler */
-void tarea_error_handler(void const * argument)
+/* USER CODE END Header_lectura_datos */
+void lectura_datos(void const * argument)
 {
-  /* USER CODE BEGIN tarea_error_handler */
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
-  /* USER CODE END tarea_error_handler */
+	/* USER CODE BEGIN lectura_datos */
+	//Inicializo estructura medicion
+	hmeasure.input = CORRIENTE;
+	hmeasure.pga = FSR6144;
+	hmeasure.ratio = SPS860;
+	float medicion = 0;
+
+	/* Infinite loop */
+	for(;;)
+	{
+		medicion = ADC_read_corriente(&hi2c1, &hmeasure);
+		osDelay(1000);
+	}
+	/* USER CODE END lectura_datos */
 }
 
 /**

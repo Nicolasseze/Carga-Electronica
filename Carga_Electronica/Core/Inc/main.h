@@ -101,6 +101,7 @@ void Error_Handler(void);
 /* USER CODE BEGIN Private defines */
 //Definicion Hardware
 #define ADC_HW	ADS1115
+#define OFFSET_CORRIENTE -32.0145302
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

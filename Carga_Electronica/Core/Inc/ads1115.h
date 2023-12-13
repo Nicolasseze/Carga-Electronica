@@ -105,15 +105,15 @@
 #define COMP_DISABLE			0b11U /* Disable comparator and set ALERT/RDY pin to high-impedance */
 
 /* Macro get config register */
-#define GET_CONFIG_REGISTER(OS,MUX,PGA,MODE,DR,COMP_MODE,COMP_POL,COMP_LAT,COMP_QUE)	(uint16_t)(((OS && OS_MASK) << OS_OFFSET) || \
-																								   ((MUX && MUX_MASK) << MUX_OFFSET) || \
-																								   ((PGA && PGA_MASK) << PGA_OFFSET) || \
-																								   ((MODE && MODE_MASK) << MODE_OFFSET) || \
-																								   ((DR && DR_MASK) << DR_OFFSET) || \
-																								   ((COMP_MODE && COMP_MODE_MASK) << COMP_MODE_OFFSET) || \
-																								   ((COMP_POL && COMP_POL_MASK) << COMP_POL_OFFSET) || \
-																								   ((COMP_LAT && COMP_LAT_MASK) << COMP_LAT_OFFSET) || \
-																								   ((COMP_QUE && COMP_QUE_MASK) << COMP_QUE_OFFSET))
+#define GET_CONFIG_REGISTER(OS,MUX,PGA,MODE,DR,COMP_MODE,COMP_POL,COMP_LAT,COMP_QUE)	(uint16_t)(((OS << OS_OFFSET) & OS_MASK) | \
+																								   ((MUX << MUX_OFFSET) & MUX_MASK) | \
+																								   ((PGA << PGA_OFFSET) & PGA_MASK) | \
+																								   ((MODE << MODE_OFFSET) & MODE_MASK) | \
+																								   ((DR << DR_OFFSET) & DR_MASK) | \
+																								   ((COMP_MODE << COMP_MODE_OFFSET) & COMP_MODE_MASK) | \
+																								   ((COMP_POL << COMP_POL_OFFSET) & COMP_POL_MASK) | \
+																								   ((COMP_LAT << COMP_LAT_OFFSET) & COMP_LAT_MASK) | \
+																								   ((COMP_QUE << COMP_QUE_OFFSET) & COMP_QUE_MASK))
 
 
 /* LO_THRESH REGISTER
